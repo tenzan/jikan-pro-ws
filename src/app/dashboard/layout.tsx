@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 interface DashboardLayoutProps {
   children: ReactNode;

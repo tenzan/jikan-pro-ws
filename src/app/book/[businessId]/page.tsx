@@ -5,10 +5,11 @@ import BookingForm from "@/app/components/BookingForm";
 
 const prisma = new PrismaClient();
 
-interface PageProps {
+type PageProps = {
   params: {
     businessId: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 async function getBusinessData(businessId: string) {
