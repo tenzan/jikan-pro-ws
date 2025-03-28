@@ -11,7 +11,7 @@ const updateAppointmentSchema = z.object({
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,7 +25,7 @@ export async function PATCH(
     const json = await request.json();
     const body = updateAppointmentSchema.parse(json);
 
-    const id = params.id;
+    const { id } = await params;
     
     // Find the appointment
     const appointment = await prisma.appointment.findUnique({
@@ -75,7 +75,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -86,7 +86,7 @@ export async function DELETE(
       );
     }
 
-    const id = params.id;
+    const { id } = await params;
     
     // Find the appointment
     const appointment = await prisma.appointment.findUnique({

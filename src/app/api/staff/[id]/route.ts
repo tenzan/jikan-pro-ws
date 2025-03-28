@@ -7,7 +7,7 @@ import { hash } from "bcrypt";
 // GET /api/staff/[id] - Get a specific staff member
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -26,9 +26,11 @@ export async function GET(
       );
     }
 
+    const { id } = await params;
+
     const staffMember = await prisma.user.findUnique({
       where: {
-        id: params.id,
+        id,
         businessId: session.user.businessId,
       },
       select: {
@@ -76,7 +78,7 @@ export async function GET(
 // PATCH /api/staff/[id] - Update a staff member
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -88,7 +90,9 @@ export async function PATCH(
       );
     }
 
-    if (session.user.role !== UserRole.OWNER && session.user.id !== params.id) {
+    const { id } = await params;
+
+    if (session.user.role !== UserRole.OWNER && session.user.id !== id) {
       return NextResponse.json(
         { message: "Forbidden" },
         { status: 403 }
@@ -104,7 +108,7 @@ export async function PATCH(
 
     const staffMember = await prisma.user.findUnique({
       where: {
-        id: params.id,
+        id,
         businessId: session.user.businessId,
       },
     });
@@ -136,7 +140,7 @@ export async function PATCH(
 
     const updatedStaffMember = await prisma.user.update({
       where: {
-        id: params.id,
+        id,
       },
       data: updateData,
       select: {
@@ -161,7 +165,7 @@ export async function PATCH(
 // DELETE /api/staff/[id] - Delete a staff member
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -180,9 +184,11 @@ export async function DELETE(
       );
     }
 
+    const { id } = await params;
+
     const staffMember = await prisma.user.findUnique({
       where: {
-        id: params.id,
+        id,
         businessId: session.user.businessId,
       },
     });
@@ -195,7 +201,7 @@ export async function DELETE(
     }
 
     // Check if the user is trying to delete themselves
-    if (session.user.id === params.id) {
+    if (session.user.id === id) {
       return NextResponse.json(
         { message: "Cannot delete your own account" },
         { status: 400 }
@@ -205,7 +211,7 @@ export async function DELETE(
     // Delete the staff member
     await prisma.user.delete({
       where: {
-        id: params.id,
+        id,
       },
     });
 
