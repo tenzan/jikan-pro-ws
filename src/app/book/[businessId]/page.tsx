@@ -5,11 +5,8 @@ import BookingForm from "@/app/components/BookingForm";
 
 const prisma = new PrismaClient();
 
-type PageProps = {
-  params: {
-    businessId: string;
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
+interface Props {
+  params: { businessId: string };
 }
 
 async function getBusinessData(businessId: string) {
@@ -33,7 +30,7 @@ async function getBusinessData(businessId: string) {
   return business;
 }
 
-export default async function BookingPage({ params }: PageProps) {
+export default async function BookingPage({ params }: Props) {
   const business = await getBusinessData(params.businessId);
 
   return (
