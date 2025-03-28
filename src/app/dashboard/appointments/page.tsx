@@ -2,9 +2,7 @@ import { Suspense } from "react";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
-import { PrismaClient } from "@prisma/client";
-import AppointmentCalendar from "@/app/components/AppointmentCalendar";
-
+import FullCalendarView from "@/app/components/FullCalendarView";
 import { prisma } from '@/lib/prisma';
 
 async function getAppointments(businessId: string) {
@@ -44,12 +42,18 @@ export default async function AppointmentsPage() {
 
   return (
     <main className="p-4 sm:p-6 lg:p-8">
-      <div className="mb-6">
+      <div className="mb-6 flex justify-between items-center">
         <h1 className="text-2xl font-semibold text-gray-900">Appointments</h1>
+        <a
+          href="/dashboard/appointments/new"
+          className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          New Appointment
+        </a>
       </div>
 
       <Suspense fallback={<div>Loading calendar...</div>}>
-        <AppointmentCalendar initialAppointments={appointments} />
+        <FullCalendarView initialAppointments={appointments} />
       </Suspense>
     </main>
   );
