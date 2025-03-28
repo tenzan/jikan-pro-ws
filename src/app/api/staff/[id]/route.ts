@@ -7,7 +7,7 @@ import { hash } from "bcrypt";
 // GET /api/staff/[id] - Get a specific staff member
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -28,7 +28,7 @@ export async function GET(
 
     const staffMember = await prisma.user.findUnique({
       where: {
-        id: params.id,
+        id: context.params.id,
         businessId: session.user.businessId,
       },
       select: {
@@ -59,7 +59,7 @@ export async function GET(
 // PATCH /api/staff/[id] - Update a staff member
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -100,7 +100,7 @@ export async function PATCH(
     // Check if staff member exists and belongs to the business
     const existingStaff = await prisma.user.findUnique({
       where: {
-        id: params.id,
+        id: context.params.id,
         businessId: session.user.businessId,
       },
     });
@@ -141,7 +141,7 @@ export async function PATCH(
     // Update staff member
     const updatedStaff = await prisma.user.update({
       where: {
-        id: params.id,
+        id: context.params.id,
       },
       data: updateData,
       select: {
@@ -165,7 +165,7 @@ export async function PATCH(
 // DELETE /api/staff/[id] - Delete a staff member
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -195,7 +195,7 @@ export async function DELETE(
     // Check if staff member exists and belongs to the business
     const existingStaff = await prisma.user.findUnique({
       where: {
-        id: params.id,
+        id: context.params.id,
         businessId: session.user.businessId,
       },
     });
@@ -227,7 +227,7 @@ export async function DELETE(
     // Delete staff member
     await prisma.user.delete({
       where: {
-        id: params.id,
+        id: context.params.id,
       },
     });
 
