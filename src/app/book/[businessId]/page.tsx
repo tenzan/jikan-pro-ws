@@ -5,10 +5,6 @@ import BookingForm from "@/app/components/BookingForm";
 
 const prisma = new PrismaClient();
 
-interface Props {
-  params: { businessId: string };
-}
-
 async function getBusinessData(businessId: string) {
   const business = await prisma.business.findUnique({
     where: { id: businessId },
@@ -30,7 +26,7 @@ async function getBusinessData(businessId: string) {
   return business;
 }
 
-export default async function BookingPage({ params }: Props) {
+export default async function BookingPage({ params }: { params: { businessId: string } }) {
   const business = await getBusinessData(params.businessId);
 
   return (
