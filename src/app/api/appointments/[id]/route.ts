@@ -9,16 +9,9 @@ const updateAppointmentSchema = z.object({
   notes: z.string().optional(),
 });
 
-// Define the params type explicitly to match Next.js 15 expectations
-type RouteParams = {
-  params: {
-    id: string;
-  };
-};
-
 export async function PATCH(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -82,7 +75,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);

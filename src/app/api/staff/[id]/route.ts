@@ -4,17 +4,10 @@ import { authOptions, UserRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcrypt";
 
-// Define the params type explicitly to match Next.js 15 expectations
-type RouteParams = {
-  params: {
-    id: string;
-  };
-};
-
 // GET /api/staff/[id] - Get a specific staff member
 export async function GET(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -83,7 +76,7 @@ export async function GET(
 // PATCH /api/staff/[id] - Update a staff member
 export async function PATCH(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -168,7 +161,7 @@ export async function PATCH(
 // DELETE /api/staff/[id] - Delete a staff member
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteParams
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
