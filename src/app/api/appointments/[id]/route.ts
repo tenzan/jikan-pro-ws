@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -9,9 +9,16 @@ const updateAppointmentSchema = z.object({
   notes: z.string().optional(),
 });
 
+// Define the params type explicitly to match Next.js 15 expectations
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
 export async function PATCH(
-  request: Request,
-  context: { params: { id: string } }
+  request: NextRequest,
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -25,7 +32,7 @@ export async function PATCH(
     const json = await request.json();
     const body = updateAppointmentSchema.parse(json);
 
-    const { id } = context.params;
+    const id = params.id;
     
     // Find the appointment
     const appointment = await prisma.appointment.findUnique({
@@ -49,7 +56,7 @@ export async function PATCH(
 
     // Update the appointment
     const updatedAppointment = await prisma.appointment.update({
-      where: { id: id },
+      where: { id },
       data: {
         status: body.status,
         ...(body.notes && { notes: body.notes }),
@@ -74,8 +81,8 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: Request,
-  context: { params: { id: string } }
+  request: NextRequest,
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -86,7 +93,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = context.params;
+    const id = params.id;
     
     // Find the appointment
     const appointment = await prisma.appointment.findUnique({
@@ -111,7 +118,7 @@ export async function DELETE(
     // Delete the appointment (or mark as cancelled)
     // For audit purposes, it's often better to mark as cancelled rather than delete
     const updatedAppointment = await prisma.appointment.update({
-      where: { id: id },
+      where: { id },
       data: {
         status: "CANCELLED",
       },

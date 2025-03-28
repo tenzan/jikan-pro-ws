@@ -4,10 +4,17 @@ import { authOptions, UserRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hash } from "bcrypt";
 
+// Define the params type explicitly to match Next.js 15 expectations
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
 // GET /api/staff/[id] - Get a specific staff member
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -28,7 +35,7 @@ export async function GET(
 
     const staffMember = await prisma.user.findUnique({
       where: {
-        id: context.params.id,
+        id: params.id,
         businessId: session.user.businessId,
       },
       select: {
@@ -36,6 +43,23 @@ export async function GET(
         name: true,
         email: true,
         role: true,
+        bio: true,
+        services: true,
+        appointments: {
+          where: {
+            startTime: {
+              gte: new Date(),
+            },
+          },
+          orderBy: {
+            startTime: 'asc',
+          },
+          take: 5,
+          include: {
+            customer: true,
+            service: true,
+          },
+        },
       },
     });
 
@@ -50,7 +74,7 @@ export async function GET(
   } catch (error) {
     console.error("Error fetching staff member:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Error fetching staff member" },
       { status: 500 }
     );
   }
@@ -59,7 +83,7 @@ export async function GET(
 // PATCH /api/staff/[id] - Update a staff member
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -71,6 +95,13 @@ export async function PATCH(
       );
     }
 
+    if (session.user.role !== UserRole.OWNER && session.user.id !== params.id) {
+      return NextResponse.json(
+        { message: "Forbidden" },
+        { status: 403 }
+      );
+    }
+
     if (!session.user.businessId) {
       return NextResponse.json(
         { message: "No business context found" },
@@ -78,70 +109,41 @@ export async function PATCH(
       );
     }
 
-    // Only ADMIN or OWNER can update staff
-    if (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.OWNER) {
-      return NextResponse.json(
-        { message: "Insufficient permissions" },
-        { status: 403 }
-      );
-    }
-
-    const body = await request.json();
-    const { name, email, role, newPassword } = body;
-
-    // Validate input
-    if (!name || !email || !role) {
-      return NextResponse.json(
-        { message: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Check if staff member exists and belongs to the business
-    const existingStaff = await prisma.user.findUnique({
+    const staffMember = await prisma.user.findUnique({
       where: {
-        id: context.params.id,
+        id: params.id,
         businessId: session.user.businessId,
       },
     });
 
-    if (!existingStaff) {
+    if (!staffMember) {
       return NextResponse.json(
         { message: "Staff member not found" },
         { status: 404 }
       );
     }
 
-    // Check if email is already in use by another user
-    if (email !== existingStaff.email) {
-      const emailInUse = await prisma.user.findUnique({
-        where: { email },
-      });
+    const body = await request.json();
 
-      if (emailInUse) {
-        return NextResponse.json(
-          { message: "Email already in use" },
-          { status: 400 }
-        );
-      }
+    // Only allow updating certain fields
+    const updateData: any = {};
+    if (body.name) updateData.name = body.name;
+    if (body.email) updateData.email = body.email;
+    if (body.bio !== undefined) updateData.bio = body.bio;
+    
+    // Only owners can change roles
+    if (body.role && session.user.role === UserRole.OWNER) {
+      updateData.role = body.role;
+    }
+    
+    // Handle password update separately
+    if (body.password) {
+      updateData.password = await hash(body.password, 10);
     }
 
-    // Prepare update data
-    const updateData: any = {
-      name,
-      email,
-      role,
-    };
-
-    // If new password is provided, hash it
-    if (newPassword) {
-      updateData.password = await hash(newPassword, 10);
-    }
-
-    // Update staff member
-    const updatedStaff = await prisma.user.update({
+    const updatedStaffMember = await prisma.user.update({
       where: {
-        id: context.params.id,
+        id: params.id,
       },
       data: updateData,
       select: {
@@ -149,14 +151,15 @@ export async function PATCH(
         name: true,
         email: true,
         role: true,
+        bio: true,
       },
     });
 
-    return NextResponse.json(updatedStaff);
+    return NextResponse.json(updatedStaffMember);
   } catch (error) {
     console.error("Error updating staff member:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Error updating staff member" },
       { status: 500 }
     );
   }
@@ -165,12 +168,12 @@ export async function PATCH(
 // DELETE /api/staff/[id] - Delete a staff member
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: RouteParams
 ) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user) {
+    if (!session?.user || session.user.role !== UserRole.OWNER) {
       return NextResponse.json(
         { message: "Unauthorized" },
         { status: 401 }
@@ -184,58 +187,40 @@ export async function DELETE(
       );
     }
 
-    // Only ADMIN or OWNER can delete staff
-    if (session.user.role !== UserRole.ADMIN && session.user.role !== UserRole.OWNER) {
-      return NextResponse.json(
-        { message: "Insufficient permissions" },
-        { status: 403 }
-      );
-    }
-
-    // Check if staff member exists and belongs to the business
-    const existingStaff = await prisma.user.findUnique({
+    const staffMember = await prisma.user.findUnique({
       where: {
-        id: context.params.id,
+        id: params.id,
         businessId: session.user.businessId,
       },
     });
 
-    if (!existingStaff) {
+    if (!staffMember) {
       return NextResponse.json(
         { message: "Staff member not found" },
         { status: 404 }
       );
     }
 
-    // Check if this is the last owner
-    if (existingStaff.role === UserRole.OWNER) {
-      const ownerCount = await prisma.user.count({
-        where: {
-          businessId: session.user.businessId,
-          role: UserRole.OWNER,
-        },
-      });
-
-      if (ownerCount <= 1) {
-        return NextResponse.json(
-          { message: "Cannot delete the last owner of the business" },
-          { status: 400 }
-        );
-      }
+    // Check if the user is trying to delete themselves
+    if (session.user.id === params.id) {
+      return NextResponse.json(
+        { message: "Cannot delete your own account" },
+        { status: 400 }
+      );
     }
 
-    // Delete staff member
+    // Delete the staff member
     await prisma.user.delete({
       where: {
-        id: context.params.id,
+        id: params.id,
       },
     });
 
-    return NextResponse.json({ message: "Staff member deleted successfully" });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting staff member:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Error deleting staff member" },
       { status: 500 }
     );
   }
