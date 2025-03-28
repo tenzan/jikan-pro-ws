@@ -32,7 +32,7 @@ declare module "next-auth/jwt" {
   interface JWT extends UserType {}
 }
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/auth/signin',
   },
@@ -108,4 +108,6 @@ export const authOptions: NextAuthOptions = {
 };
 
 const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+// Export Next.js API route handlers
+export const GET = handler;
+export const POST = handler;
