@@ -1,11 +1,11 @@
-import type { NextAuthOptions, User, Session } from "next-auth";
+import type { NextAuthOptions, User as NextAuthUser, Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import { compare } from "bcrypt";
+import { prisma } from "./prisma";
 
-const prisma = new PrismaClient();
-
+// Define UserRole enum to match Prisma schema
 export enum UserRole {
   ADMIN = "ADMIN",
   OWNER = "OWNER",
@@ -20,6 +20,7 @@ export interface UserType {
   businessId?: string | null;
 }
 
+// Extend NextAuth's User type with our custom fields
 declare module "next-auth" {
   interface User extends UserType {}
   interface Session {
@@ -45,7 +46,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<any> {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }

@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { headers } from 'next/headers';
-
-const prisma = new PrismaClient();
 
 export type BusinessAccess = {
   businessId: string;
@@ -10,7 +8,7 @@ export type BusinessAccess = {
 };
 
 export async function getBusinessAccess(): Promise<BusinessAccess | null> {
-  const headersList = headers();
+  const headersList = await headers();
   const businessId = headersList.get('x-business-id');
   const userRole = headersList.get('x-user-role');
 

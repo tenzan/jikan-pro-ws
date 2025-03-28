@@ -1,16 +1,15 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import BookingForm from "@/app/components/BookingForm";
 import { Metadata } from "next";
 
-const prisma = new PrismaClient();
-
 export async function generateMetadata(
-  { params }: { params: { businessId: string } }
+  { params }: { params: Promise<{ businessId: string }> }
 ): Promise<Metadata> {
+  const { businessId } = await params;
   const business = await prisma.business.findUnique({
-    where: { id: params.businessId },
+    where: { id: businessId },
   });
 
   return {
@@ -39,10 +38,13 @@ async function getBusinessData(businessId: string) {
   return business;
 }
 
-export default async function BookingPage(
-  { params }: { params: { businessId: string } }
-) {
-  const business = await getBusinessData(params.businessId);
+export default async function BookingPage({
+  params,
+}: {
+  params: Promise<{ businessId: string }>
+}) {  
+  const { businessId } = await params;
+  const business = await getBusinessData(businessId);
 
   return (
     <main className="min-h-screen bg-gray-50">

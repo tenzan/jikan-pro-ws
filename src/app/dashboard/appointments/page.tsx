@@ -5,7 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import AppointmentCalendar from "@/app/components/AppointmentCalendar";
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 async function getAppointments(businessId: string) {
   const startDate = new Date();

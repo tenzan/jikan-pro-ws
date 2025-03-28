@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export function generateSlug(name: string): string {
   // Convert to lowercase and replace spaces with hyphens

@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { z } from "zod";
 
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 const appointmentSchema = z.object({
   startTime: z.string().datetime(),
@@ -66,19 +66,30 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create or get customer
-    const customer = await prisma.customer.upsert({
-      where: { email: body.customerEmail },
-      update: {
-        name: body.customerName,
-        phone: body.customerPhone,
-      },
-      create: {
-        email: body.customerEmail,
-        name: body.customerName,
-        phone: body.customerPhone,
-      },
+    // Find existing customer by email or create a new one
+    let customer = await prisma.customer.findFirst({
+      where: { email: body.customerEmail }
     });
+    
+    if (!customer) {
+      // Create new customer if not found
+      customer = await prisma.customer.create({
+        data: {
+          email: body.customerEmail,
+          name: body.customerName,
+          phone: body.customerPhone,
+        },
+      });
+    } else {
+      // Update existing customer
+      customer = await prisma.customer.update({
+        where: { id: customer.id },
+        data: {
+          name: body.customerName,
+          phone: body.customerPhone,
+        },
+      });
+    }
 
     // Create appointment
     const appointment = await prisma.appointment.create({
