@@ -6,12 +6,9 @@ import { Metadata } from "next";
 
 const prisma = new PrismaClient();
 
-type Props = {
-  params: { businessId: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: { params: { businessId: string } }
+): Promise<Metadata> {
   const business = await prisma.business.findUnique({
     where: { id: params.businessId },
   });
@@ -42,7 +39,9 @@ async function getBusinessData(businessId: string) {
   return business;
 }
 
-export default async function BookingPage({ params }: Props) {
+export default async function BookingPage(
+  { params }: { params: { businessId: string } }
+) {
   const business = await getBusinessData(params.businessId);
 
   return (
