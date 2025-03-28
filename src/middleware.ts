@@ -10,12 +10,16 @@ const PUBLIC_PATHS = [
   '/_next',
   '/static',
   '/favicon.ico',
+  '/', // Allow access to the home page
+  '/book', // Allow access to the public booking page
 ];
 
 // Paths that require authentication but don't require business context
 const AUTH_ONLY_PATHS = [
   '/dashboard/profile',
   '/api/user',
+  '/dashboard', // Allow access to dashboard without business context
+  '/dashboard/appointments', // Allow access to appointments without business context
 ];
 
 export async function middleware(request: NextRequest) {

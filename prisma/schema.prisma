@@ -33,10 +33,14 @@ model User {
 }
 
 model Business {
-  id          String        @id // Will be auto-generated slug from name
+  id          String        @id @default(cuid())
   name        String
-  ownerId     String        @unique
-  owner       User          @relation("BusinessOwner", fields: [ownerId], references: [id])
+  slug        String        @unique // URL-friendly identifier
+  address     String?
+  phone       String?
+  description String?
+  ownerId     String?       @unique
+  owner       User?         @relation("BusinessOwner", fields: [ownerId], references: [id])
   staff       User[]        @relation("BusinessStaff")
   services    Service[]
   appointments Appointment[]

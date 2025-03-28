@@ -16,19 +16,27 @@ export default function SignIn() {
     setError('');
 
     try {
+      console.log('Attempting to sign in with:', { email });
       const result = await signIn('credentials', {
         email,
         password,
         redirect: false,
+        callbackUrl: '/dashboard',
       });
+
+      console.log('Sign in result:', result);
 
       if (result?.error) {
         setError('Invalid email or password');
         return;
       }
 
-      router.push('/dashboard');
+      // Add a small delay before redirecting
+      setTimeout(() => {
+        router.push('/dashboard');
+      }, 500);
     } catch (error) {
+      console.error('Sign in error:', error);
       setError('An error occurred. Please try again.');
     }
   };

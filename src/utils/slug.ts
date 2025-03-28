@@ -21,7 +21,7 @@ export async function generateUniqueBusinessSlug(name: string): Promise<string> 
   
   // Check if the base slug exists
   const existingBusiness = await prisma.business.findUnique({
-    where: { id: baseSlug },
+    where: { slug: baseSlug },
   });
   
   if (!existingBusiness) {

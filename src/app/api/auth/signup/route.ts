@@ -34,39 +34,51 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await hash(password, 12);
 
-    // Generate unique business slug
-    const businessId = await generateUniqueBusinessSlug(businessName);
+    // Generate unique business slug from name
+    const businessSlug = await generateUniqueBusinessSlug(businessName);
 
     // Create user and business in a transaction
     const result = await prisma.$transaction(async (tx: TransactionClient) => {
-      // Create user first
+      // Create business first
+      const business = await tx.business.create({
+        data: {
+          name: businessName,
+          slug: businessSlug,
+          description: null,
+          address: null,
+          phone: null,
+        },
+      });
+
+      // Then create user with reference to the business
       const user = await tx.user.create({
         data: {
           email,
           password: hashedPassword,
           name,
           role: 'OWNER',
-          ownedBusiness: {
-            create: {
-              id: businessId,
-              name: businessName,
-            },
-          },
-        },
-        include: {
-          ownedBusiness: true,
+          businessId: business.id, // Link user to business
         },
       });
 
-      return user;
+      // Update business with owner reference
+      await tx.business.update({
+        where: { id: business.id },
+        data: { ownerId: user.id },
+      });
+
+      return { user, business };
     });
 
-    const user = result;
+    const { user, business } = result;
 
     // Don't send the password back
     const { password: _, ...userWithoutPassword } = user;
 
-    return NextResponse.json(userWithoutPassword);
+    return NextResponse.json({
+      user: userWithoutPassword,
+      business
+    });
   } catch (error) {
     console.error('Signup error:', error);
     return NextResponse.json(
