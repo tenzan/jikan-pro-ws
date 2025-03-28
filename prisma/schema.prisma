@@ -1,0 +1,113 @@
+// This is your Prisma schema file
+// Learn more about it at https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  name          String?
+  password      String        // Hashed password
+  role          UserRole      @default(STAFF)
+  businessId    String?       // For staff members, references their business
+  business      Business?     @relation("BusinessStaff", fields: [businessId], references: [id])
+  ownedBusiness Business?     @relation("BusinessOwner")
+  appointments  Appointment[] // Appointments assigned to this staff member
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([email])
+}
+
+model Business {
+  id          String        @id @default(cuid())
+  name        String
+  ownerId     String        @unique
+  owner       User          @relation("BusinessOwner", fields: [ownerId], references: [id])
+  staff       User[]        @relation("BusinessStaff")
+  services    Service[]
+  appointments Appointment[]
+  workingHours WorkingHours[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Customer {
+  id           String        @id @default(cuid())
+  email        String
+  name         String
+  phone        String?
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([email])
+}
+
+model Service {
+  id          String        @id @default(cuid())
+  name        String
+  duration    Int          // Duration in minutes
+  description String?
+  businessId  String
+  business    Business      @relation(fields: [businessId], references: [id])
+  appointments Appointment[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([businessId])
+}
+
+model Appointment {
+  id          String        @id @default(cuid())
+  startTime   DateTime
+  endTime     DateTime
+  status      AppointmentStatus @default(PENDING)
+  customerId  String
+  customer    Customer      @relation(fields: [customerId], references: [id])
+  businessId  String
+  business    Business      @relation(fields: [businessId], references: [id])
+  serviceId   String
+  service     Service       @relation(fields: [serviceId], references: [id])
+  staffId     String
+  staff       User          @relation(fields: [staffId], references: [id])
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([startTime, endTime])
+  @@index([businessId])
+  @@index([customerId])
+  @@index([staffId])
+}
+
+model WorkingHours {
+  id          String    @id @default(cuid())
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id])
+  dayOfWeek   Int      // 0 = Sunday, 1 = Monday, etc.
+  startTime   String    // Format: "HH:mm"
+  endTime     String    // Format: "HH:mm"
+  isEnabled   Boolean   @default(true)
+
+  @@unique([businessId, dayOfWeek])
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
