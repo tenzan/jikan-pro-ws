@@ -16,7 +16,9 @@ export async function GET(request: Request) {
     // Find user with this token
     const user = await prisma.user.findFirst({
       where: {
+        // @ts-ignore - signupToken is added to the schema but TypeScript doesn't recognize it yet
         signupToken: token,
+        // @ts-ignore - signupTokenExpires is added to the schema but TypeScript doesn't recognize it yet
         signupTokenExpires: {
           gt: new Date(), // Token must not be expired
         },

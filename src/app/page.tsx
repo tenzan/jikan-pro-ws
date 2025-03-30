@@ -46,10 +46,10 @@ export default function Home() {
               Log In
             </Link>
             <Link 
-              href="/booking/demo" 
+              href="/signup" 
               className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all duration-200"
             >
-              Book Appointment
+              Get started
             </Link>
           </div>
         </div>
@@ -69,15 +69,15 @@ export default function Home() {
             <div className="mt-8 flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
               <Link 
                 href="/signup" 
-                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-200"
+                className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all duration-200"
               >
-                Get Started
+                Get started
               </Link>
               <Link 
-                href="/book" 
+                href="/booking/demo" 
                 className="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 shadow-sm hover:shadow transition-all duration-200"
               >
-                Book Appointment
+                Try a demo
               </Link>
             </div>
           </div>

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import prisma from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
-import EventTypeCard from '@/app/components/booking/EventTypeCard';
+import EventTypeCard from '@/components/booking/EventTypeCard';
 
 interface PageProps {
   params: {
@@ -13,10 +13,10 @@ interface PageProps {
 export default async function UserBookingPage({ params }: PageProps) {
   const { username } = params;
   
-  // Find the user by username
+  // Find the user by slug
   const user = await prisma.user.findUnique({
     where: {
-      username: username,
+      slug: username,
     },
     include: {
       eventTypes: {
@@ -27,6 +27,7 @@ export default async function UserBookingPage({ params }: PageProps) {
           duration: 'asc',
         },
       },
+      business: true,
     },
   });
 
@@ -39,17 +40,9 @@ export default async function UserBookingPage({ params }: PageProps) {
       <div className="max-w-4xl mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <div className="relative inline-block">
-            {user.image ? (
-              <img 
-                src={user.image} 
-                alt={user.name || ''} 
-                className="w-24 h-24 rounded-full mx-auto border-4 border-white shadow-md"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-full mx-auto bg-primary-500 text-white flex items-center justify-center text-2xl font-bold border-4 border-white shadow-md">
-                {user.name?.charAt(0) || username.charAt(0).toUpperCase()}
-              </div>
-            )}
+            <div className="w-24 h-24 rounded-full mx-auto bg-primary-500 text-white flex items-center justify-center text-2xl font-bold border-4 border-white shadow-md">
+              {user.name?.charAt(0) || username.charAt(0).toUpperCase()}
+            </div>
           </div>
           <h1 className="mt-6 text-3xl font-bold text-gray-900">{user.name}</h1>
           {user.business && (

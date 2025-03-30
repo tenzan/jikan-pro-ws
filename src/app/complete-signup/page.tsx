@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 
 export default function CompleteSignup() {
@@ -79,7 +80,18 @@ export default function CompleteSignup() {
         throw new Error(data.error || 'Failed to complete signup');
       }
 
-      // Redirect to onboarding or dashboard
+      // Sign in the user automatically
+      const signInResult = await signIn('credentials', {
+        email: email,
+        password: password,
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        throw new Error(signInResult.error || 'Failed to sign in');
+      }
+
+      // Redirect to onboarding
       router.push('/onboarding');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');

@@ -31,6 +31,8 @@ model User {
   timezone      String?       // Staff member's timezone
   bio           String?       // Short bio for scheduling page
   avatarUrl     String?       // Profile picture URL
+  signupToken   String?       // Token for email signup verification
+  signupTokenExpires DateTime? // Expiration time for the signup token
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 

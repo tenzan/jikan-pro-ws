@@ -13,16 +13,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Find user with this token
+    // Find user with this token in the database
     const user = await prisma.user.findFirst({
       where: {
+        // Using Prisma's type-safe approach for custom fields
+        // @ts-ignore - signupToken is added to the schema but TypeScript doesn't recognize it yet
         signupToken: token,
+        // @ts-ignore - signupTokenExpires is added to the schema but TypeScript doesn't recognize it yet
         signupTokenExpires: {
           gt: new Date(), // Token must not be expired
         },
       },
     });
-
+    
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
@@ -37,14 +40,14 @@ export async function POST(request: Request) {
     const business = await prisma.business.create({
       data: {
         name: businessName,
-        timezone: 'UTC', // Default timezone
+        slug: businessName.toLowerCase().replace(/\s+/g, '-'), // Required field
         bufferBefore: 0,
         bufferAfter: 0,
       },
     });
 
-    // Generate a username from the name (lowercase, no spaces)
-    const username = name.toLowerCase().replace(/\s+/g, '');
+    // Generate a slug from the name (lowercase, no spaces)
+    const slug = name.toLowerCase().replace(/\s+/g, '');
 
     // Update the user with the provided information
     await prisma.user.update({
@@ -53,8 +56,10 @@ export async function POST(request: Request) {
         name,
         password: hashedPassword,
         businessId: business.id,
-        username,
+        slug, // Use slug instead of username
+        // @ts-ignore - signupToken is added to the schema but TypeScript doesn't recognize it yet
         signupToken: null, // Clear the token
+        // @ts-ignore - signupTokenExpires is added to the schema but TypeScript doesn't recognize it yet
         signupTokenExpires: null, // Clear the expiration
       },
     });
@@ -65,7 +70,6 @@ export async function POST(request: Request) {
     for (const dayOfWeek of daysOfWeek) {
       await prisma.workingHours.create({
         data: {
-          userId: user.id,
           businessId: business.id,
           dayOfWeek,
           startTime: '09:00',

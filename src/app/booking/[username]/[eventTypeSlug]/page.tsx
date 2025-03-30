@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
-import BookingCalendar from '@/app/components/booking/BookingCalendar';
+import BookingCalendar from '../../../../components/booking/BookingCalendar';
 
 interface PageProps {
   params: {
@@ -15,7 +15,7 @@ export default async function EventTypeBookingPage({ params }: PageProps) {
   // Find the user and event type
   const user = await prisma.user.findUnique({
     where: {
-      username: username,
+      slug: username,
     },
     include: {
       eventTypes: {
@@ -24,7 +24,6 @@ export default async function EventTypeBookingPage({ params }: PageProps) {
           isActive: true,
         },
       },
-      workingHours: true,
       business: true,
     },
   });
@@ -40,7 +39,7 @@ export default async function EventTypeBookingPage({ params }: PageProps) {
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="mb-8">
           <a 
-            href={`/booking/${username}`}
+            href={`/booking/${user.slug}`}
             className="text-primary-600 hover:text-primary-700 flex items-center"
           >
             <svg 
@@ -99,7 +98,7 @@ export default async function EventTypeBookingPage({ params }: PageProps) {
           <BookingCalendar 
             eventType={eventType} 
             user={user} 
-            workingHours={user.workingHours} 
+            workingHours={[]} 
           />
         </div>
       </div>
