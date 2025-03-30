@@ -6,7 +6,7 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect("/signin");
   }
 
   // Redirect to appointments page as the main dashboard view

@@ -24,7 +24,7 @@ export default async function NewAppointmentPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user?.businessId) {
-    redirect("/auth/signin");
+    redirect("/signin");
   }
 
   const business = await getBusinessData(session.user.businessId);

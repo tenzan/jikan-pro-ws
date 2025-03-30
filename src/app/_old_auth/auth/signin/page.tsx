@@ -51,7 +51,7 @@ export default function SignIn() {
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
             <Link
-              href="/auth/signup"
+              href="/signup"
               className="font-medium text-primary-600 hover:text-primary-500"
             >
               create a new account

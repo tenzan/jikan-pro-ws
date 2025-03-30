@@ -35,7 +35,7 @@ export default async function AppointmentsPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect("/signin");
   }
 
   // If user doesn't have a business ID, show a message instead of redirecting

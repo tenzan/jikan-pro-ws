@@ -4,22 +4,50 @@ import Image from 'next/image';
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      {/* Header */}
-      <header className="py-6 px-4 sm:px-6 lg:px-8">
+      {/* Header - Sticky Navigation */}
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 py-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center">
-            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Jikan Pro</span>
+            <Link href="/" className="flex items-center">
+              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Jikan Pro</span>
+            </Link>
+          </div>
+          <div className="hidden md:flex items-center space-x-8">
+            <Link 
+              href="/product"
+              className="text-gray-600 hover:text-gray-900 font-medium"
+            >
+              Product
+            </Link>
+            <Link 
+              href="/solutions"
+              className="text-gray-600 hover:text-gray-900 font-medium"
+            >
+              Solutions
+            </Link>
+            <Link 
+              href="/pricing"
+              className="text-gray-600 hover:text-gray-900 font-medium"
+            >
+              Pricing
+            </Link>
+            <Link 
+              href="/resources"
+              className="text-gray-600 hover:text-gray-900 font-medium"
+            >
+              Resources
+            </Link>
           </div>
           <div className="flex items-center space-x-4">
             <Link 
-              href="/auth/signin" 
+              href="/signin" 
               className="text-gray-600 hover:text-gray-900 font-medium"
             >
-              Sign In
+              Log In
             </Link>
             <Link 
-              href="/book" 
-              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm hover:shadow transition-all duration-200"
+              href="/booking/demo" 
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition-all duration-200"
             >
               Book Appointment
             </Link>
@@ -40,7 +68,7 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0">
               <Link 
-                href="/auth/signin" 
+                href="/signup" 
                 className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-200"
               >
                 Get Started
@@ -207,7 +235,7 @@ export default function Home() {
           <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
             <div className="inline-flex rounded-md shadow">
               <Link
-                href="/auth/signin"
+                href="/signup"
                 className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50"
               >
                 Get started
@@ -215,10 +243,10 @@ export default function Home() {
             </div>
             <div className="ml-3 inline-flex rounded-md shadow">
               <Link
-                href="/book"
+                href="/booking/demo"
                 className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-800 hover:bg-blue-900"
               >
-                Book a demo
+                Book Appointment
               </Link>
             </div>
           </div>

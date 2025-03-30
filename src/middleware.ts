@@ -4,14 +4,15 @@ import { getToken } from 'next-auth/jwt';
 
 // Paths that don't require authentication
 const PUBLIC_PATHS = [
-  '/auth/signin',
-  '/auth/signup',
+  '/signin',
+  '/signup',
   '/api/auth',
   '/_next',
   '/static',
   '/favicon.ico',
   '/', // Allow access to the home page
-  '/book', // Allow access to the public booking page
+  '/booking', // Allow access to the public booking page
+  '/complete-signup', // Allow access to complete signup
 ];
 
 // Paths that require authentication but don't require business context
@@ -25,6 +26,8 @@ const AUTH_ONLY_PATHS = [
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
   
+  // No redirects needed as we've removed the old routes entirely
+  
   // Allow public paths
   if (PUBLIC_PATHS.some(path => url.pathname.startsWith(path))) {
     return NextResponse.next();
@@ -35,7 +38,7 @@ export async function middleware(request: NextRequest) {
 
   // If no token and trying to access protected route, redirect to login
   if (!token) {
-    return NextResponse.redirect(new URL('/auth/signin', request.url));
+    return NextResponse.redirect(new URL('/signin', request.url));
   }
 
   // Allow access to auth-only paths without business context

@@ -47,7 +47,7 @@ export default function SignUp() {
       }
 
       // Redirect to sign in page after successful signup
-      router.push('/auth/signin?success=true');
+      router.push('/signin?success=true');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
     }
@@ -70,7 +70,7 @@ export default function SignUp() {
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
             <Link
-              href="/auth/signin"
+              href="/signin"
               className="font-medium text-primary-600 hover:text-primary-500"
             >
               sign in to your existing account

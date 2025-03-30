@@ -30,7 +30,7 @@ export default async function EventTypesPage() {
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect("/signin");
   }
   
   const eventTypes = await getEventTypes(session.user.id);
