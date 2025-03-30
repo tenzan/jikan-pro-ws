@@ -26,6 +26,11 @@ model User {
   business      Business?     @relation("BusinessStaff", fields: [businessId], references: [id])
   ownedBusiness Business?     @relation("BusinessOwner")
   appointments  Appointment[] // Appointments assigned to this staff member
+  eventTypes    EventType[]   // Event types created by this staff member
+  slug          String?       @unique // Personal URL slug for direct scheduling
+  timezone      String?       // Staff member's timezone
+  bio           String?       // Short bio for scheduling page
+  avatarUrl     String?       // Profile picture URL
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -33,20 +38,23 @@ model User {
 }
 
 model Business {
-  id          String        @id @default(cuid())
-  name        String
-  slug        String        @unique // URL-friendly identifier
-  address     String?
-  phone       String?
-  description String?
-  ownerId     String?       @unique
-  owner       User?         @relation("BusinessOwner", fields: [ownerId], references: [id])
-  staff       User[]        @relation("BusinessStaff")
-  services    Service[]
-  appointments Appointment[]
-  workingHours WorkingHours[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  name          String
+  slug          String        @unique // URL-friendly identifier
+  address       String?
+  phone         String?
+  description   String?
+  ownerId       String?       @unique
+  owner         User?         @relation("BusinessOwner", fields: [ownerId], references: [id])
+  staff         User[]        @relation("BusinessStaff")
+  services      Service[]
+  eventTypes    EventType[]
+  appointments  Appointment[]
+  workingHours  WorkingHours[]
+  bufferBefore  Int           @default(0) // Default buffer time before appointments (minutes)
+  bufferAfter   Int           @default(0) // Default buffer time after appointments (minutes)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Customer {
@@ -54,6 +62,7 @@ model Customer {
   email        String
   name         String
   phone        String?
+  timezone     String?       // Customer's timezone
   appointments Appointment[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
@@ -62,47 +71,85 @@ model Customer {
 }
 
 model Service {
-  id          String        @id @default(cuid())
-  name        String
-  duration    Int          // Duration in minutes
-  description String?
-  businessId  String
-  business    Business      @relation(fields: [businessId], references: [id])
+  id           String        @id @default(cuid())
+  name         String
+  duration     Int           // Duration in minutes
+  description  String?
+  color        String?       // Color for calendar display
+  businessId   String
+  business     Business      @relation(fields: [businessId], references: [id])
   appointments Appointment[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  eventTypes   EventType[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@index([businessId])
 }
 
+// New model for Calendly-like event types
+model EventType {
+  id             String        @id @default(cuid())
+  title          String        // e.g., "30 Minute Meeting"
+  slug           String        // URL-friendly identifier
+  description    String?
+  duration       Int           // Duration in minutes
+  serviceId      String?       // Optional link to a service
+  service        Service?      @relation(fields: [serviceId], references: [id])
+  location       String?       // Can be "In-person", "Phone", "Google Meet", etc.
+  color          String        @default("#3788d8") // Color for calendar display
+  isActive       Boolean       @default(true)
+  requiresConfirmation Boolean @default(false) // Whether appointments need manual confirmation
+  minimumNotice  Int           @default(0)     // Minimum notice in minutes
+  bufferBefore   Int           @default(0)     // Buffer time before (minutes)
+  bufferAfter    Int           @default(0)     // Buffer time after (minutes)
+  businessId     String
+  business       Business      @relation(fields: [businessId], references: [id])
+  creatorId      String
+  creator        User          @relation(fields: [creatorId], references: [id])
+  appointments   Appointment[]
+  customQuestions Json?        // Customizable questions for booking
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@unique([creatorId, slug])
+  @@index([businessId])
+}
+
 model Appointment {
-  id          String        @id @default(cuid())
-  startTime   DateTime
-  endTime     DateTime
-  status      AppointmentStatus @default(PENDING)
-  customerId  String
-  customer    Customer      @relation(fields: [customerId], references: [id])
-  businessId  String
-  business    Business      @relation(fields: [businessId], references: [id])
-  serviceId   String
-  service     Service       @relation(fields: [serviceId], references: [id])
-  staffId     String
-  staff       User          @relation(fields: [staffId], references: [id])
-  notes       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  startTime      DateTime
+  endTime        DateTime
+  status         AppointmentStatus @default(PENDING)
+  customerId     String
+  customer       Customer      @relation(fields: [customerId], references: [id])
+  businessId     String
+  business       Business      @relation(fields: [businessId], references: [id])
+  serviceId      String
+  service        Service       @relation(fields: [serviceId], references: [id])
+  staffId        String
+  staff          User          @relation(fields: [staffId], references: [id])
+  eventTypeId    String?       // Link to event type if booked that way
+  eventType      EventType?    @relation(fields: [eventTypeId], references: [id])
+  notes          String?
+  responses      Json?         // Responses to custom questions
+  cancelReason   String?       // Reason for cancellation
+  reminderSent   Boolean       @default(false)
+  timezone       String?       // Timezone the appointment was booked in
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([startTime, endTime])
   @@index([businessId])
   @@index([customerId])
   @@index([staffId])
+  @@index([eventTypeId])
 }
 
 model WorkingHours {
   id          String    @id @default(cuid())
   businessId  String
   business    Business  @relation(fields: [businessId], references: [id])
-  dayOfWeek   Int      // 0 = Sunday, 1 = Monday, etc.
+  dayOfWeek   Int       // 0 = Sunday, 1 = Monday, etc.
   startTime   String    // Format: "HH:mm"
   endTime     String    // Format: "HH:mm"
   isEnabled   Boolean   @default(true)
